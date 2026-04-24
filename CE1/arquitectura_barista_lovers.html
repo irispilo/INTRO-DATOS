@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Arquitectura de Datos — Barista Lovers</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #0d0a08;
+    --surface:   #1a1310;
+    --card:      #231a14;
+    --border:    #3d2e22;
+    --green:     #4a7c59;
+    --green-lt:  #7ab893;
+    --gold:      #c9960a;
+    --gold-lt:   #f5c842;
+    --cream:     #f0e6d3;
+    --muted:     #8c7260;
+    --red:       #c0392b;
+    --blue:      #2980b9;
+    --blue-lt:   #5dade2;
+    --arrow:     #6b4f38;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--cream);
+    min-height: 100vh;
+    padding: 40px 32px 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    margin-bottom: 52px;
+    position: relative;
+  }
+  header::after {
+    content: '';
+    display: block;
+    width: 80px; height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--green-lt));
+    margin: 18px auto 0;
+    border-radius: 2px;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-lt);
+    background: rgba(201,150,10,0.12);
+    border: 1px solid rgba(201,150,10,0.3);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    color: var(--cream);
+  }
+  h1 span { color: var(--gold-lt); }
+  .subtitle {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── CANVAS ── */
+  .canvas {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* ── LAYER ── */
+  .layer {
+    display: grid;
+    gap: 16px;
+    position: relative;
+  }
+  .layer-1 { grid-template-columns: 1fr; }
+  .layer-2 { grid-template-columns: 1fr 1fr; }
+  .layer-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .layer-4 { grid-template-columns: repeat(4, 1fr); }
+
+  /* ── ARROW ROW ── */
+  .arrow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 48px;
+    position: relative;
+  }
+  .arrow-row svg { display: block; }
+  .arrow-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: var(--bg);
+    padding: 2px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── NODE CARD ── */
+  .node {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 20px 18px;
+    position: relative;
+    transition: transform .2s, box-shadow .2s;
+    overflow: hidden;
+  }
+  .node:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  .node::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .node.green::before  { background: linear-gradient(90deg, var(--green), var(--green-lt)); }
+  .node.gold::before   { background: linear-gradient(90deg, var(--gold), var(--gold-lt)); }
+  .node.blue::before   { background: linear-gradient(90deg, var(--blue), var(--blue-lt)); }
+  .node.red::before    { background: linear-gradient(90deg, var(--red), #e74c3c); }
+  .node.muted::before  { background: linear-gradient(90deg, #4a3728, var(--muted)); }
+
+  .node-icon {
+    font-size: 22px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .node-title {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--cream);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .node-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--gold-lt);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .node-desc {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .node-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 12px;
+  }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.8px;
+  }
+  .tag.g  { background: rgba(74,124,89,0.2);  color: var(--green-lt); border: 1px solid rgba(74,124,89,0.35); }
+  .tag.b  { background: rgba(41,128,185,0.2); color: var(--blue-lt);  border: 1px solid rgba(41,128,185,0.35); }
+  .tag.au { background: rgba(201,150,10,0.18);color: var(--gold-lt);  border: 1px solid rgba(201,150,10,0.3); }
+  .tag.r  { background: rgba(192,57,43,0.2);  color: #e74c3c;         border: 1px solid rgba(192,57,43,0.35); }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::before, .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── FLOW RULES TABLE ── */
+  .rules-section {
+    max-width: 1100px;
+    margin: 48px auto 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 28px 24px;
+  }
+  .rules-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--gold-lt);
+    margin-bottom: 18px;
+  }
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .rule-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .rule-card .rule-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    color: var(--gold-lt);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .rule-card .rule-val {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream);
+  }
+  .rule-card .rule-desc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  /* Print / export hint */
+  .print-hint {
+    text-align: center;
+    margin-top: 32px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #4a3728;
+    letter-spacing: 1.5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="badge">CS070 · Caso de Estudio 1</div>
+  <h1>Arquitectura de Datos<br/><span>Barista Lovers</span></h1>
+  <p class="subtitle">Café Barista Guatemala · Cantata S.A. · Sistema de Recompensas Digital · 2025–2026</p>
+</header>
+
+<div class="canvas">
+
+  <!-- ══ CAPA 1: CLIENTE ══ -->
+  <div class="section-label">Capa de Presentación — Cliente Final</div>
+  <div class="layer layer-3">
+    <div class="node blue">
+      <span class="node-icon">📱</span>
+      <span class="node-sub">Canal Digital</span>
+      <div class="node-title">Apple Wallet / Google Wallet</div>
+      <p class="node-desc">Pase digital con código QR único por cliente. Almacena saldo de puntos visible, nivel actual y acceso directo al portal.</p>
+      <div class="node-tags">
+        <span class="tag b">Wallet Pass</span>
+        <span class="tag b">QR Code</span>
+        <span class="tag g">Read-only</span>
+      </div>
+    </div>
+    <div class="node blue">
+      <span class="node-icon">🌐</span>
+      <span class="node-sub">Portal Web</span>
+      <div class="node-title">Portal Barista Lovers</div>
+      <p class="node-desc">cafe-barista.app.piggy.eu — Dashboard del cliente: puntos actuales, historial, vouchers disponibles, catálogo de canjes.</p>
+      <div class="node-tags">
+        <span class="tag b">Piggy Platform</span>
+        <span class="tag b">HTTPS</span>
+        <span class="tag au">Auth</span>
+      </div>
+    </div>
+    <div class="node blue">
+      <span class="node-icon">📧</span>
+      <span class="node-sub">Notificaciones</span>
+      <div class="node-title">Email / Push Notifications</div>
+      <p class="node-desc">Vouchers de recompensa, alertas de puntos por vencer, comunicaciones de cumpleaños y beneficios por nivel.</p>
+      <div class="node-tags">
+        <span class="tag b">Transaccional</span>
+        <span class="tag au">Automático</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- arrow -->
+  <div class="arrow-row">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 4v14M6 13l6 6 6-6" stroke="#6b4f38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="arrow-label">Presentación de QR · Compra · Canje</span>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 4v14M6 13l6 6 6-6" stroke="#6b4f38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- ══ CAPA 2: PUNTO DE VENTA ══ -->
+  <div class="section-label">Capa de Captura — Punto de Venta (POS)</div>
+  <div class="layer layer-2">
+    <div class="node gold">
+      <span class="node-icon">🏪</span>
+      <span class="node-sub">Tienda Física</span>
+      <div class="node-title">POS + Escáner QR</div>
+      <p class="node-desc">El barista escanea el QR del cliente al momento del pago. El POS registra el monto de la transacción, el producto y la sucursal. Única vía válida para acumular y canjear puntos.</p>
+      <div class="node-tags">
+        <span class="tag au">Acumulación</span>
+        <span class="tag au">Canje</span>
+        <span class="tag r">Solo presencial</span>
+      </div>
+    </div>
+    <div class="node gold">
+      <span class="node-icon">📡</span>
+      <span class="node-sub">Integración</span>
+      <div class="node-title">API Gateway / Webhook</div>
+      <p class="node-desc">Cada transacción del POS dispara un evento en tiempo real hacia la plataforma Piggy. Incluye: monto GTQ, timestamp, sucursal, cliente_id y tipo de operación (compra / canje).</p>
+      <div class="node-tags">
+        <span class="tag b">REST API</span>
+        <span class="tag b">Webhook</span>
+        <span class="tag g">Real-time</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- arrow -->
+  <div class="arrow-row">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 4v14M6 13l6 6 6-6" stroke="#6b4f38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="arrow-label">Evento de transacción · Q1 → 1pt</span>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 4v14M6 13l6 6 6-6" stroke="#6b4f38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- ══ CAPA 3: PLATAFORMA PIGGY ══ -->
+  <div class="section-label">Capa de Procesamiento — Plataforma Piggy (SaaS)</div>
+  <div class="layer layer-3">
+    <div class="node green">
+      <span class="node-icon">⚙️</span>
+      <span class="node-sub">Motor de Reglas</span>
+      <div class="node-title">Engine de Puntos</div>
+      <p class="node-desc">Aplica la regla Q1 = 1 punto. Valida tope de 4,000 pts en saldo activo. Registra historial acumulado independiente del saldo (para cálculo de nivel).</p>
+      <div class="node-tags">
+        <span class="tag g">Q1 = 1pt</span>
+        <span class="tag r">Tope 4,000</span>
+      </div>
+    </div>
+    <div class="node green">
+      <span class="node-icon">🏅</span>
+      <span class="node-sub">Gestión de Niveles</span>
+      <div class="node-title">Level Manager</div>
+      <p class="node-desc">Silver → Gold (>1,500 hist.) → Platinum (>3,500 hist.). El nivel se basa en historial, no en saldo. Reinicio anual de niveles cada enero.</p>
+      <div class="node-tags">
+        <span class="tag au">Silver</span>
+        <span class="tag au">Gold</span>
+        <span class="tag au">Platinum</span>
+      </div>
+    </div>
+    <div class="node green">
+      <span class="node-icon">🎟️</span>
+      <span class="node-sub">Recompensas</span>
+      <div class="node-title">Voucher Engine</div>
+      <p class="node-desc">Genera vouchers (200–350 pts). Emite QR de canje. Verifica disponibilidad por sucursal y fecha de vigencia. Bloquea canjes duplicados.</p>
+      <div class="node-tags">
+        <span class="tag g">200–350 pts</span>
+        <span class="tag r">Sin duplicados</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- arrow -->
+  <div class="arrow-row">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 4v14M6 13l6 6 6-6" stroke="#6b4f38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="arrow-label">Datos de clientes · Eventos · Métricas</span>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 4v14M6 13l6 6 6-6" stroke="#6b4f38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- ══ CAPA 4: BACKEND CANTATA ══ -->
+  <div class="section-label">Capa de Datos — Back-end Cantata S.A.</div>
+  <div class="layer layer-4">
+    <div class="node muted">
+      <span class="node-icon">🗄️</span>
+      <span class="node-sub">Almacenamiento</span>
+      <div class="node-title">Base de Datos de Clientes</div>
+      <p class="node-desc">Nombre, email, fecha de nacimiento, dirección, fecha de registro. Retención máx. 5 años. Datos cifrados.</p>
+      <div class="node-tags"><span class="tag g">Piggy DB</span></div>
+    </div>
+    <div class="node muted">
+      <span class="node-icon">📊</span>
+      <span class="node-sub">Análisis</span>
+      <div class="node-title">CRM / Dashboard</div>
+      <p class="node-desc">Segmentación de clientes, KPIs por nivel, análisis de caducidad. Exportaciones para decisiones de marketing.</p>
+      <div class="node-tags"><span class="tag b">Analytics</span></div>
+    </div>
+    <div class="node muted">
+      <span class="node-icon">🔒</span>
+      <span class="node-sub">Seguridad</span>
+      <div class="node-title">Control de Acceso</div>
+      <p class="node-desc">1 cuenta por persona. No transferencia de puntos. Auditoría de maniobras de evasión de políticas de caducidad.</p>
+      <div class="node-tags"><span class="tag r">Anti-fraude</span></div>
+    </div>
+    <div class="node muted">
+      <span class="node-icon">🔔</span>
+      <span class="node-sub">Comunicación</span>
+      <div class="node-title">Motor de Notificaciones</div>
+      <p class="node-desc">Correos automáticos de bienvenida, cumpleaños, alertas de caducidad (junio 2026 / diciembre 2026) y reactivación.</p>
+      <div class="node-tags"><span class="tag au">Email</span><span class="tag au">Push</span></div>
+    </div>
+  </div>
+
+</div><!-- /canvas -->
+
+<!-- ══ REGLAS DE NEGOCIO ══ -->
+<div class="rules-section">
+  <div class="rules-title">⚡ Reglas de Negocio del Motor de Puntos</div>
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-key">Acumulación</div>
+      <div class="rule-val">Q1.00 = 1 punto</div>
+      <div class="rule-desc">Se acreditan puntos enteros; los centavos se ignoran.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-key">Tope de saldo</div>
+      <div class="rule-val">Máx. 4,000 pts activos</div>
+      <div class="rule-desc">Al superar el tope, la acumulación se pausa hasta realizar un canje.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-key">Nivel Silver</div>
+      <div class="rule-val">0 pts (inicio)</div>
+      <div class="rule-desc">Bebida de bienvenida, cumpleaños, shot adicional.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-key">Nivel Gold</div>
+      <div class="rule-val">&gt; 1,500 pts históricos</div>
+      <div class="rule-desc">+ Refill, agrandado gratis, puntos dobles en temporadas.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-key">Nivel Platinum</div>
+      <div class="rule-val">&gt; 3,500 pts históricos</div>
+      <div class="rule-desc">+ Refill Americano, leche vegetal, reserva de sala, 10% retail.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-key">Canje mínimo</div>
+      <div class="rule-val">200 – 350 pts</div>
+      <div class="rule-desc">Solo en tiendas físicas con QR. El nivel no baja al canjear.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-key">Caducidad inactividad</div>
+      <div class="rule-val">100% al 1 jun 2026</div>
+      <div class="rule-desc">Sin actividad por ≥6 meses desde el 1 ene 2026 → pérdida total.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-key">Ajuste anual</div>
+      <div class="rule-val">−25% al 31 dic 2026</div>
+      <div class="rule-desc">Solo cuentas creadas antes del 1 jul 2026. No transferible.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LEYENDA ══ -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#2980b9"></div>Canal de cliente / UI</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c9960a"></div>Punto de captura (POS)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4a7c59"></div>Motor de procesamiento (Piggy)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6b4f38"></div>Back-end Cantata S.A.</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div>Restricción / regla crítica</div>
+</div>
+
+<p class="print-hint">Para exportar: Ctrl+P → Guardar como PDF · Recomendado: A3 horizontal, sin márgenes</p>
+
+</body>
+</html>
